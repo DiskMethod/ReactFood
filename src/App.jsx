@@ -1,30 +1,17 @@
-import React, { useState } from "react";
+import React, { useContext } from "react";
+import { CartContext } from "./components/Cart/CartContext";
 
 import Header from "./components/Layout/Header";
 import Meals from "./components/Meals/Meals";
 import Cart from "./components/Cart/Cart";
 
 function App() {
-  const [showCart, setShowCart] = useState(false);
-
-  const openCartHandler = (e) => {
-    setShowCart(true);
-  };
-
-  const closeCartHandler = (e) => {
-    setShowCart(false);
-  };
-
-  const orderCartHandler = (e) => {
-    return;
-  };
+  const { showCart } = useContext(CartContext);
 
   return (
     <>
-      {showCart && (
-        <Cart onClose={closeCartHandler} onOrder={orderCartHandler} />
-      )}
-      <Header onOpen={openCartHandler} />
+      {showCart && <Cart />}
+      <Header />
       <main>
         <Meals />
       </main>
