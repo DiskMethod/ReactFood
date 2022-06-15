@@ -1,11 +1,23 @@
 import React, { useState } from "react";
 import CartContext from "../../store/cart-context";
 
+const getTotalAmount = (items) => {
+  return Object.keys(items).reduce((acc, curr) => {
+    return (
+      Math.round((acc + items[curr].price * items[curr].count) * 100) / 100
+    );
+  }, 0);
+};
+
+const getTotalItems = (items) => {
+  return Object.keys(items).reduce((acc, curr) => {
+    return acc + items[curr].count;
+  }, 0);
+};
+
 const CartContextProvider = (props) => {
   const [showCart, setShowCart] = useState(false);
   const [items, setItems] = useState({});
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
 
   const openHandler = (e) => {
     setShowCart(true);
@@ -17,24 +29,27 @@ const CartContextProvider = (props) => {
 
   const addItem = (item) => {
     setItems((prevItems) => {
+      let prevCount = 0;
+      if (item.id in prevItems) {
+        prevCount = prevItems[item.id].count;
+      }
       return {
         ...prevItems,
         [item.id]: {
           name: item.name,
           price: item.price,
-          count: item.count,
+          count: prevCount + item.count,
         },
       };
     });
-    setTotalAmount(
-      (totalAmount) => Math.round((totalAmount + item.price) * 100) / 100
-    );
-    setTotalCount((prevCount) => prevCount + item.count);
   };
 
-  // TODO
   const removeItem = (id) => {
-    return;
+    setItems((prevItems) => {
+      const temp = { ...prevItems };
+      delete temp[id];
+      return temp;
+    });
   };
 
   const cartContextValue = {
@@ -42,8 +57,8 @@ const CartContextProvider = (props) => {
     openHandler,
     closeHandler,
     items,
-    totalCount,
-    totalAmount,
+    totalItems: getTotalItems(items),
+    totalAmount: getTotalAmount(items),
     addItem,
     removeItem,
   };
