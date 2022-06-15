@@ -41,9 +41,31 @@ const cartReducer = (state, action) => {
         totalAmount: getTotalAmount(newItems),
       };
     case "REMOVE":
-      const temp = { ...state };
-      delete state[action.id];
-      return temp;
+      if (action.id in state.items) {
+        let newItems;
+        if (state.items[action.id].count === 1) {
+          newItems = Object.keys(state.items).reduce((acc, curr) => {
+            if (action.id !== curr) acc[curr] = { ...state.items[curr] };
+            return acc;
+          }, {});
+        } else {
+          newItems = {
+            ...state.items,
+            [action.id]: {
+              ...state.items[action.id],
+              count: state.items[action.id].count - 1,
+            },
+          };
+        }
+        return {
+          ...state,
+          items: newItems,
+          totalItems: getTotalItems(newItems),
+          totalAmount: getTotalAmount(newItems),
+        };
+      }
+      console.log(`Unable to remove item with id: ${action.id}`);
+      return state;
     default:
       console.log("Should not get here!");
       return state;
