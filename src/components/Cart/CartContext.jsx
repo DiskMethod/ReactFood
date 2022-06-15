@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useReducer } from "react";
 import CartContext from "../../store/cart-context";
 
 const getTotalAmount = (items) => {
@@ -15,50 +15,74 @@ const getTotalItems = (items) => {
   }, 0);
 };
 
+const cartReducer = (state, action) => {
+  switch (action.type) {
+    case "OPEN":
+      return { ...state, showCart: true };
+    case "CLOSE":
+      return { ...state, showCart: false };
+    case "ADD":
+      let prevCount = 0;
+      if (action.id in state.items) {
+        prevCount = state.items[action.id].count;
+      }
+      const newItems = {
+        ...state.items,
+        [action.id]: {
+          name: action.name,
+          price: action.price,
+          count: prevCount + action.count,
+        },
+      };
+      return {
+        ...state,
+        items: newItems,
+        totalItems: getTotalItems(newItems),
+        totalAmount: getTotalAmount(newItems),
+      };
+    case "REMOVE":
+      const temp = { ...state };
+      delete state[action.id];
+      return temp;
+    default:
+      console.log("Should not get here!");
+      return state;
+  }
+};
+
+const initState = {
+  showCart: false,
+  items: {},
+  totalItems: 0,
+  totalAmount: 0,
+};
+
 const CartContextProvider = (props) => {
-  const [showCart, setShowCart] = useState(false);
-  const [items, setItems] = useState({});
+  const [cart, dispatchCart] = useReducer(cartReducer, initState);
 
   const openHandler = (e) => {
-    setShowCart(true);
+    dispatchCart({ type: "OPEN" });
   };
 
   const closeHandler = (e) => {
-    setShowCart(false);
+    dispatchCart({ type: "CLOSE" });
   };
 
   const addItem = (item) => {
-    setItems((prevItems) => {
-      let prevCount = 0;
-      if (item.id in prevItems) {
-        prevCount = prevItems[item.id].count;
-      }
-      return {
-        ...prevItems,
-        [item.id]: {
-          name: item.name,
-          price: item.price,
-          count: prevCount + item.count,
-        },
-      };
-    });
+    dispatchCart({ type: "ADD", ...item });
   };
 
   const removeItem = (id) => {
-    setItems((prevItems) => {
-      const temp = { ...prevItems };
-      delete temp[id];
-      return temp;
-    });
+    dispatchCart({ type: "REMOVE", id });
   };
 
   const cartContextValue = {
-    showCart,
+    showCart: cart.showCart,
     openHandler,
     closeHandler,
-    items,
-    totalItems: getTotalItems(items),
-    totalAmount: getTotalAmount(items),
+    items: cart.items,
+    totalItems: cart.totalItems,
+    totalAmount: cart.totalAmount,
     addItem,
     removeItem,
   };

@@ -21,6 +21,7 @@ const Cart = (props) => {
       <div className={classes.total}>
         <span>Total Amount</span>
         <span>{totalAmount}</span>
+        {console.log("Cart Rendered!")}
       </div>
       <div className={classes.actions}>
         <button onClick={closeHandler} className={classes["button--alt"]}>
