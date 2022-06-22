@@ -34,23 +34,55 @@ import MealItem from "./MealItem/MealItem";
 
 const AvailableMeals = (props) => {
   const [meals, setMeals] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchMeals = async () => {
-    const response = await fetch(
-      "https://react-http-da165-default-rtdb.firebaseio.com/meals.json"
-    );
-    const data = await response.json();
-    const items = Object.keys(data).reduce((acc, curr) => {
-      const meal = data[curr];
-      acc.push(<MealItem key={meal.id} meal={meal} />);
-      return acc;
-    }, []);
-    setMeals(items);
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        "https://react-http-da165-default-rtdb.firebaseio.com/meals.jsn"
+      );
+
+      if (!response.ok) {
+        throw new Error(`failed to fetch data (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      const items = Object.keys(data).reduce((acc, curr) => {
+        const meal = data[curr];
+        acc.push(<MealItem key={meal.id} meal={meal} />);
+        return acc;
+      }, []);
+
+      setIsLoading(false);
+      setMeals(items);
+    } catch (error) {
+      setIsLoading(false);
+      setError(error.message);
+    }
   };
 
   useEffect(() => {
     fetchMeals();
   }, []);
+
+  if (isLoading) {
+    return (
+      <section className={classes.mealsLoading}>
+        <p>Loading...</p>
+      </section>
+    );
+  }
+
+  if (error !== "") {
+    return (
+      <section className={classes.errorLoading}>
+        <p>Error: {error}</p>
+      </section>
+    );
+  }
 
   return (
     <section className={classes.meals}>
