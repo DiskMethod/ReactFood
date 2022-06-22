@@ -54,6 +54,13 @@ const Checkout = (props) => {
     if (!formIsValid) {
       return;
     }
+
+    props.order({
+      name,
+      street,
+      city,
+      zip,
+    });
   };
 
   return (

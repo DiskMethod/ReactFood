@@ -9,8 +9,17 @@ import classes from "./Cart.module.css";
 
 const Cart = (props) => {
   const [isOrdering, setIsOrdering] = useState(false);
-  const { closeHandler, totalAmount, totalItems, items, removeItem, addItem } =
-    useContext(CartContext);
+  const [isPostingOrder, setIsPostingOrder] = useState(false);
+  const [error, setError] = useState("");
+  const {
+    closeHandler,
+    totalAmount,
+    totalItems,
+    items,
+    removeItem,
+    addItem,
+    resetCart,
+  } = useContext(CartContext);
 
   const cartRemoveHandler = (id) => {
     removeItem(id);
@@ -26,6 +35,35 @@ const Cart = (props) => {
 
   const cancelHandler = (e) => {
     setIsOrdering(false);
+  };
+
+  const postOrder = async (userData) => {
+    try {
+      setIsPostingOrder(true);
+      const response = await fetch(
+        "https://react-http-da165-default-rtdb.firebaseio.com/orders.json",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: userData,
+            order: { ...items, totalAmount },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to submit order");
+      }
+      setError("none");
+      setIsPostingOrder(false);
+      resetCart();
+    } catch (error) {
+      setError(error.message);
+      setIsPostingOrder(false);
+    }
   };
 
   const cartItems = (
@@ -54,15 +92,27 @@ const Cart = (props) => {
     </div>
   );
 
-  return (
-    <Modal>
+  const cartModalContent = (
+    <>
       {cartItems}
       <div className={classes.total}>
         <span>Total Amount</span>
         <span>${totalAmount.toFixed(2)}</span>
       </div>
-      {isOrdering && <Checkout onCancel={cancelHandler} />}
+      {isOrdering && <Checkout order={postOrder} onCancel={cancelHandler} />}
       {!isOrdering && modalActions}
+    </>
+  );
+
+  const isPostingOrderModalContent = <p>Sending order data...</p>;
+
+  const postingOrderSuccessModalContent = <p>Successfully sent the order!</p>;
+
+  return (
+    <Modal>
+      {!isPostingOrder && error === "" && cartModalContent}
+      {isPostingOrder && isPostingOrderModalContent}
+      {error === "none" && postingOrderSuccessModalContent}
     </Modal>
   );
 };

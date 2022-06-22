@@ -66,6 +66,8 @@ const cartReducer = (state, action) => {
       }
       console.log(`Unable to remove item with id: ${action.id}`);
       return state;
+    case "RESET":
+      return { ...state, items: {}, totalItems: 0, totalAmount: 0 };
     default:
       console.log("Should not get here!");
       return state;
@@ -98,6 +100,10 @@ const CartContextProvider = (props) => {
     dispatchCart({ type: "REMOVE", id });
   };
 
+  const resetCart = () => {
+    dispatchCart({ type: "RESET" });
+  };
+
   const cartContextValue = {
     showCart: cart.showCart,
     openHandler,
@@ -107,6 +113,7 @@ const CartContextProvider = (props) => {
     totalAmount: cart.totalAmount,
     addItem,
     removeItem,
+    resetCart,
   };
 
   return (
