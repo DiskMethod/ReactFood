@@ -41,7 +41,7 @@ const AvailableMeals = (props) => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        "https://react-http-da165-default-rtdb.firebaseio.com/meals.jsn"
+        "https://react-http-da165-default-rtdb.firebaseio.com/meals.json"
       );
 
       if (!response.ok) {
